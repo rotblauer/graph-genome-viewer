@@ -1,0 +1,20 @@
+H	VN:Z:1.0
+S	s1	ACGTACGTACGTACGTACGT	DP:i:10
+S	s2	TGCATGCATGCA	DP:i:15
+S	s3	AAAAAAAA	DP:i:5
+S	s4	CCCCCCCCCC	DP:i:20
+S	s5	GGGGGGGGGGGGGG	DP:i:12
+S	s6	TTTTTTTT	DP:i:8
+S	s7	ACACACACACAC	DP:i:25
+L	s1	+	s2	+	0M
+L	s1	+	s3	+	0M
+L	s2	+	s4	+	0M
+L	s3	+	s4	+	0M
+L	s4	+	s5	+	0M
+L	s5	+	s6	+	0M
+L	s5	+	s7	+	0M
+L	s6	+	s7	+	0M
+P	reference	s1+,s2+,s4+,s5+,s6+	*
+P	haplotype1	s1+,s3+,s4+,s5+,s7+	*
+P	haplotype2	s1+,s2+,s4+,s5+,s7+	*
+

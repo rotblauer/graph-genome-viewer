@@ -1,0 +1,69 @@
+[package]
+name = "graph-genome-viewer"
+version = "0.1.0"
+edition = "2021"
+authors = ["Graph Genome Viewer Contributors"]
+description = "A professional pangenome visualization tool for graph genomes and long-read alignment analysis"
+license = "MIT"
+repository = "https://github.com/graph-genome-viewer/graph-genome-viewer"
+keywords = ["bioinformatics", "pangenome", "visualization", "genomics", "gfa"]
+categories = ["science", "visualization", "gui"]
+
+[dependencies]
+# GUI Framework - egui for immediate-mode, GPU-accelerated rendering
+eframe = { version = "0.29", default-features = false, features = [
+    "default_fonts",
+    "glow",
+    "persistence",
+] }
+egui = "0.29"
+egui_extras = { version = "0.29", features = ["image"] }
+
+# Bioinformatics parsers
+gfa = "0.10"                    # GFA1/GFA2 parsing
+# noodles = { version = "0.84", features = ["fasta", "fastq", "bam", "sam", "core"] }
+
+# File handling & memory mapping
+memmap2 = "0.9"
+flate2 = "1.0"                  # gzip support
+
+# Spatial indexing for large graphs
+rstar = "0.12"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# File dialogs
+rfd = "0.15"                    # Rust File Dialog - cross-platform
+
+# Image export
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+# Parallel processing
+rayon = "1.10"
+
+# Random for layout algorithms
+rand = "0.8"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dev]
+opt-level = 1
+
+# For static Linux binary compilation
+[target.x86_64-unknown-linux-musl]
+rustflags = ["-C", "target-feature=+crt-static"]
+
