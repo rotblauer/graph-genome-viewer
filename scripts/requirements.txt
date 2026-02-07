@@ -1,0 +1,14 @@
+# Data processing dependencies for graph-genome-viewer
+requests>=2.31.0
+tqdm>=4.66.0
+
+# Optional: for working with genomic data
+# pysam>=0.22.0
+# biopython>=1.83
+
+# Optional: for data analysis
+# pandas>=2.0.0
+
+# Optional: for GFA manipulation
+# gfapy>=1.2.3
+

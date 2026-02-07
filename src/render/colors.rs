@@ -6,69 +6,104 @@ use egui::Color32;
 pub struct ColorPalette;
 
 impl ColorPalette {
+    // Segment colors - professional and subtle
     pub const SEGMENT_FILL: Color32 = Color32::from_rgb(70, 130, 180);
     pub const SEGMENT_STROKE: Color32 = Color32::from_rgb(100, 160, 210);
     pub const SEGMENT_SELECTED: Color32 = Color32::from_rgb(255, 180, 100);
     pub const SEGMENT_HOVER: Color32 = Color32::from_rgb(90, 150, 200);
 
+    // Link colors
     pub const LINK_DEFAULT: Color32 = Color32::from_rgb(120, 120, 140);
     pub const LINK_HOVER: Color32 = Color32::from_rgb(180, 180, 200);
     pub const LINK_SELECTED: Color32 = Color32::from_rgb(255, 200, 100);
 
+    // Path colors - distinct, colorblind-friendly palette
     pub const PATH_COLORS: [Color32; 8] = [
-        Color32::from_rgb(86, 180, 233),
-        Color32::from_rgb(230, 159, 0),
-        Color32::from_rgb(0, 158, 115),
-        Color32::from_rgb(240, 228, 66),
-        Color32::from_rgb(0, 114, 178),
-        Color32::from_rgb(213, 94, 0),
-        Color32::from_rgb(204, 121, 167),
-        Color32::from_rgb(150, 150, 150),
+        Color32::from_rgb(86, 180, 233),   // Sky blue
+        Color32::from_rgb(230, 159, 0),    // Orange
+        Color32::from_rgb(0, 158, 115),    // Bluish green
+        Color32::from_rgb(240, 228, 66),   // Yellow
+        Color32::from_rgb(0, 114, 178),    // Blue
+        Color32::from_rgb(213, 94, 0),     // Vermilion
+        Color32::from_rgb(204, 121, 167),  // Reddish purple
+        Color32::from_rgb(170, 170, 170),  // Gray
     ];
 
-    pub const TEXT_PRIMARY: Color32 = Color32::from_rgb(220, 220, 230);
+    // Background colors
+    pub const BACKGROUND: Color32 = Color32::from_rgb(30, 30, 35);
+    pub const GRID: Color32 = Color32::from_rgb(50, 50, 55);
+
+    // Text colors
+    pub const TEXT_PRIMARY: Color32 = Color32::from_rgb(230, 230, 240);
     pub const TEXT_SECONDARY: Color32 = Color32::from_rgb(160, 160, 170);
-    pub const TEXT_DIM: Color32 = Color32::from_rgb(100, 100, 110);
 
-    pub const BG_DARK: Color32 = Color32::from_rgb(20, 22, 28);
-    pub const BG_PANEL: Color32 = Color32::from_rgb(28, 30, 36);
-
+    /// Get a path color by index (cycles through available colors)
     pub fn path_color(index: usize) -> Color32 {
         Self::PATH_COLORS[index % Self::PATH_COLORS.len()]
     }
 }
 
-/// Gradient for coverage heatmap
+/// Gradient for coverage visualization
 pub struct CoverageGradient;
 
 impl CoverageGradient {
-    pub fn color(value: f32) -> Color32 {
-        let value = value.clamp(0.0, 1.0);
-        let (r, g, b) = if value < 0.25 {
-            let t = value * 4.0;
-            (0, (t * 200.0) as u8, 200)
-        } else if value < 0.5 {
-            let t = (value - 0.25) * 4.0;
-            (0, 200, (200.0 - t * 200.0) as u8)
-        } else if value < 0.75 {
-            let t = (value - 0.5) * 4.0;
-            ((t * 255.0) as u8, 200, 0)
+    /// Get color for coverage value (normalized 0-1)
+    pub fn color(normalized_coverage: f32) -> Color32 {
+        let t = normalized_coverage.clamp(0.0, 1.0);
+
+        // Blue (low) -> Green (medium) -> Yellow -> Red (high)
+        if t < 0.33 {
+            let tt = t / 0.33;
+            Color32::from_rgb(
+                (30.0 + 20.0 * tt) as u8,
+                (60.0 + 100.0 * tt) as u8,
+                (180.0 - 80.0 * tt) as u8,
+            )
+        } else if t < 0.66 {
+            let tt = (t - 0.33) / 0.33;
+            Color32::from_rgb(
+                (50.0 + 150.0 * tt) as u8,
+                (160.0 + 40.0 * tt) as u8,
+                (100.0 - 50.0 * tt) as u8,
+            )
         } else {
-            let t = (value - 0.75) * 4.0;
-            (255, (200.0 - t * 200.0) as u8, 0)
-        };
-        Color32::from_rgb(r, g, b)
+            let tt = (t - 0.66) / 0.34;
+            Color32::from_rgb(
+                (200.0 + 55.0 * tt) as u8,
+                (200.0 - 100.0 * tt) as u8,
+                (50.0 - 50.0 * tt) as u8,
+            )
+        }
+    }
+}
+
+/// Variant type colors
+pub struct VariantColors;
+
+impl VariantColors {
+    pub const SNV: Color32 = Color32::from_rgb(100, 149, 237);
+    pub const INSERTION: Color32 = Color32::from_rgb(50, 205, 50);
+    pub const DELETION: Color32 = Color32::from_rgb(220, 20, 60);
+    pub const COMPLEX: Color32 = Color32::from_rgb(255, 165, 0);
+    pub const INVERSION: Color32 = Color32::from_rgb(148, 0, 211);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_path_color_cycles() {
+        let c0 = ColorPalette::path_color(0);
+        let c8 = ColorPalette::path_color(8);
+        assert_eq!(c0, c8);
     }
 
-    pub fn identity_color(identity: f64) -> Color32 {
-        let identity = identity.clamp(0.0, 1.0) as f32;
-        if identity < 0.9 {
-            let t = identity / 0.9;
-            Color32::from_rgb(200, (t * 200.0) as u8, 0)
-        } else {
-            let t = (identity - 0.9) / 0.1;
-            Color32::from_rgb((200.0 - t * 200.0) as u8, 200, 0)
-        }
+    #[test]
+    fn test_coverage_gradient() {
+        let low = CoverageGradient::color(0.0);
+        let high = CoverageGradient::color(1.0);
+        assert_ne!(low, high);
     }
 }
 

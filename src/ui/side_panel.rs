@@ -2,6 +2,7 @@
 
 use egui::{Context, Ui};
 use crate::app::{GraphGenomeApp, LayoutAlgorithmChoice, ColorScheme};
+use super::SVSummaryPanel;
 
 pub struct SidePanel;
 
@@ -15,6 +16,9 @@ impl SidePanel {
                 ui.separator();
 
                 Self::graph_info_section(ui, app);
+                ui.separator();
+
+                Self::sv_section(ui, app);
                 ui.separator();
 
                 Self::layout_section(ui, app);
@@ -53,6 +57,21 @@ impl SidePanel {
                 }
             } else {
                 ui.label("No graph loaded");
+            }
+        });
+    }
+
+    fn sv_section(ui: &mut Ui, app: &mut GraphGenomeApp) {
+        ui.collapsing("🧬 Structural Variants", |ui| {
+            ui.checkbox(&mut app.ui_state.show_sv_panel, "Show SV Panel");
+
+            if let Some(ref report) = app.sv_report {
+                ui.separator();
+                SVSummaryPanel::show(ui, report);
+            } else if app.graph.is_some() {
+                ui.label("Click 'Refresh Analysis' in SV panel");
+            } else {
+                ui.label("Load a graph first");
             }
         });
     }

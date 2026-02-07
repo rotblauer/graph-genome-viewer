@@ -77,3 +77,86 @@ impl Layout {
         self.segments.get(name)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::graph::{GraphGenome, Segment, Link, Orientation};
+
+    fn create_test_graph() -> GraphGenome {
+        let mut graph = GraphGenome::new();
+        graph.add_segment(Segment::new("s1", "ACGTACGT"));
+        graph.add_segment(Segment::new("s2", "TGCATGCA"));
+        graph.add_segment(Segment::new("s3", "AAAAAAAA"));
+        graph.add_link(Link::new("s1", Orientation::Forward, "s2", Orientation::Forward, "0M"));
+        graph.add_link(Link::new("s2", Orientation::Forward, "s3", Orientation::Forward, "0M"));
+        graph
+    }
+
+    #[test]
+    fn test_tubemap_layout() {
+        let graph = create_test_graph();
+        let layout = TubeMapLayout::new().compute(&graph);
+
+        assert_eq!(layout.segments.len(), 3);
+        assert_eq!(layout.links.len(), 2);
+
+        // All segments should be laid out
+        assert!(layout.get_segment("s1").is_some());
+        assert!(layout.get_segment("s2").is_some());
+        assert!(layout.get_segment("s3").is_some());
+    }
+
+    #[test]
+    fn test_force_layout() {
+        let graph = create_test_graph();
+        let layout = ForceDirectedLayout::new().compute(&graph);
+
+        assert_eq!(layout.segments.len(), 3);
+        assert_eq!(layout.links.len(), 2);
+    }
+
+    #[test]
+    fn test_layout_bounds() {
+        let mut layout = Layout::new();
+        layout.segments.insert("test".to_string(), SegmentLayout {
+            name: "test".to_string(),
+            x: 100.0,
+            y: 50.0,
+            width: 40.0,
+            height: 20.0,
+            rank: 0,
+        });
+        layout.recalculate_bounds();
+
+        assert!(layout.bounds.width() > 0.0);
+        assert!(layout.bounds.height() > 0.0);
+    }
+
+    #[test]
+    fn test_segment_layout_edges() {
+        let seg = SegmentLayout {
+            name: "test".to_string(),
+            x: 100.0,
+            y: 50.0,
+            width: 40.0,
+            height: 20.0,
+            rank: 0,
+        };
+
+        assert_eq!(seg.left(), 80.0);
+        assert_eq!(seg.right(), 120.0);
+        assert_eq!(seg.top(), 40.0);
+        assert_eq!(seg.bottom(), 60.0);
+        assert_eq!(seg.center(), (100.0, 50.0));
+    }
+
+    #[test]
+    fn test_empty_graph_layout() {
+        let graph = GraphGenome::new();
+        let layout = TubeMapLayout::new().compute(&graph);
+
+        assert_eq!(layout.segments.len(), 0);
+        assert_eq!(layout.links.len(), 0);
+    }
+}

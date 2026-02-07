@@ -20,4 +20,61 @@ build.log
 # Python virtual environment (if any)
 .venv/
 __pycache__/
+*.pyc
+
+# Generated test data (keep committed sample data)
+data/test_*.gfa
+
+# Downloaded HPRC data (large files)
+data/hprc/
+
+# ============================================
+# Large genomic data files - DO NOT COMMIT
+# ============================================
+
+# Compressed GFA files (often very large)
+*.gfa.gz
+*.gfa.zst
+*.gfa.xz
+*.gfa.bz2
+
+# Large chromosome-scale GFA files
+data/chr*.gfa
+!data/na19240_chr17_sv.gfa
+!data/simple_bubble.gfa
+!data/tiny.gfa
+
+# Alignment files (can be huge)
+*.gaf
+*.gaf.gz
+*.bam
+*.sam
+*.cram
+*.paf
+
+# FASTA/FASTQ files
+*.fa
+*.fasta
+*.fna
+*.fa.gz
+*.fasta.gz
+*.fq
+*.fastq
+*.fq.gz
+*.fastq.gz
+
+# VCF files
+*.vcf
+*.vcf.gz
+*.bcf
+
+# Index files
+*.fai
+*.gzi
+*.tbi
+*.csi
+*.bai
+
+# Any file over 50MB (use git-lfs for these)
+# Note: This is a reminder - gitignore can't filter by size
 

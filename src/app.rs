@@ -7,8 +7,8 @@ use crate::graph::GraphGenome;
 use crate::io::gfa::GfaLoader;
 use crate::layout::{Layout, LayoutAlgorithm, TubeMapLayout, ForceDirectedLayout};
 use crate::render::GraphRenderer;
-use crate::analysis::AlignmentStats;
-use crate::ui::{SidePanel, TopMenu, StatusBar};
+use crate::analysis::{AlignmentStats, SVEvalReport};
+use crate::ui::{SidePanel, TopMenu, StatusBar, SVPanel};
 
 /// Main application state
 pub struct GraphGenomeApp {
@@ -26,6 +26,9 @@ pub struct GraphGenomeApp {
 
     /// Alignment statistics (if alignments loaded)
     pub alignment_stats: Option<AlignmentStats>,
+
+    /// SV evaluation report
+    pub sv_report: Option<SVEvalReport>,
 
     /// Current viewport transform (pan/zoom)
     pub viewport: Viewport,
@@ -81,6 +84,8 @@ pub struct UiState {
     pub show_side_panel: bool,
     /// Show bottom metrics panel
     pub show_metrics_panel: bool,
+    /// Show SV visualization panel
+    pub show_sv_panel: bool,
     /// Currently selected node/segment ID
     pub selected_segment: Option<String>,
     /// Currently selected path
@@ -98,6 +103,7 @@ impl Default for UiState {
         Self {
             show_side_panel: true,
             show_metrics_panel: true,
+            show_sv_panel: true,
             selected_segment: None,
             selected_path: None,
             color_scheme: ColorScheme::default(),
@@ -151,6 +157,7 @@ impl GraphGenomeApp {
             layout_algorithm: LayoutAlgorithmChoice::default(),
             renderer: GraphRenderer::new(),
             alignment_stats: None,
+            sv_report: None,
             viewport: Viewport::default(),
             ui_state: UiState::default(),
             loading_state: LoadingState::Idle,
@@ -170,6 +177,7 @@ impl GraphGenomeApp {
                 let layout = self.compute_layout(&graph);
                 self.layout = Some(layout);
                 self.graph = Some(graph);
+                self.sv_report = None;  // Reset SV report for new graph
                 self.viewport = Viewport::default();
                 self.loading_state = LoadingState::Idle;
             }
@@ -227,6 +235,11 @@ impl eframe::App for GraphGenomeApp {
         // Side panel (graph info, paths, settings)
         if self.ui_state.show_side_panel {
             SidePanel::show(ctx, self);
+        }
+
+        // SV visualization panel (bottom)
+        if self.ui_state.show_sv_panel {
+            SVPanel::show(ctx, self);
         }
 
         // Bottom status bar
@@ -289,16 +302,25 @@ impl GraphGenomeApp {
 
         // Title
         painter.text(
-            center - egui::vec2(0.0, 40.0),
+            center - egui::vec2(0.0, 60.0),
             egui::Align2::CENTER_CENTER,
             "Graph Genome Viewer",
             egui::FontId::proportional(32.0),
             egui::Color32::from_rgb(200, 200, 210),
         );
 
+        // Prototype warning
+        painter.text(
+            center - egui::vec2(0.0, 30.0),
+            egui::Align2::CENTER_CENTER,
+            "⚠️ AI-Generated Prototype - Not for Production Use",
+            egui::FontId::proportional(12.0),
+            egui::Color32::from_rgb(255, 180, 100),
+        );
+
         // Subtitle
         painter.text(
-            center,
+            center + egui::vec2(0.0, 10.0),
             egui::Align2::CENTER_CENTER,
             "Drop a GFA file here or use File → Open",
             egui::FontId::proportional(16.0),
@@ -308,7 +330,7 @@ impl GraphGenomeApp {
         // Instructions
         let instructions = "Supported formats: GFA, GFA2";
         painter.text(
-            center + egui::vec2(0.0, 30.0),
+            center + egui::vec2(0.0, 40.0),
             egui::Align2::CENTER_CENTER,
             instructions,
             egui::FontId::proportional(12.0),

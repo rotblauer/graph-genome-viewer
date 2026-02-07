@@ -7,7 +7,7 @@ pub mod segment;
 pub mod link;
 pub mod path;
 
-pub use segment::{Segment, TagValue};
+pub use segment::{Segment, TagValue, SegmentSequence};
 pub use link::Link;
 pub use path::{Path, PathSegment};
 
@@ -240,6 +240,18 @@ mod tests {
     }
 
     #[test]
+    fn test_orientation_flip() {
+        assert_eq!(Orientation::Forward.flip(), Orientation::Reverse);
+        assert_eq!(Orientation::Reverse.flip(), Orientation::Forward);
+    }
+
+    #[test]
+    fn test_orientation_display() {
+        assert_eq!(format!("{}", Orientation::Forward), "+");
+        assert_eq!(format!("{}", Orientation::Reverse), "-");
+    }
+
+    #[test]
     fn test_graph_basic_operations() {
         let mut graph = GraphGenome::new();
 
@@ -250,6 +262,59 @@ mod tests {
         assert_eq!(graph.node_count(), 2);
         assert_eq!(graph.edge_count(), 1);
         assert_eq!(graph.total_sequence_length(), 8);
+    }
+
+    #[test]
+    fn test_graph_get_segment() {
+        let mut graph = GraphGenome::new();
+        graph.add_segment(Segment::new("test_seg", "ACGTACGT"));
+
+        let seg = graph.get_segment("test_seg");
+        assert!(seg.is_some());
+        assert_eq!(seg.unwrap().sequence_length(), 8);
+
+        let missing = graph.get_segment("nonexistent");
+        assert!(missing.is_none());
+    }
+
+    #[test]
+    fn test_graph_adjacency() {
+        let mut graph = GraphGenome::new();
+        graph.add_segment(Segment::new("s1", "ACGT"));
+        graph.add_segment(Segment::new("s2", "TGCA"));
+        graph.add_segment(Segment::new("s3", "AAAA"));
+        graph.add_link(Link::new("s1", Orientation::Forward, "s2", Orientation::Forward, "0M"));
+        graph.add_link(Link::new("s1", Orientation::Forward, "s3", Orientation::Forward, "0M"));
+
+        let links = graph.get_links_for_segment("s1");
+        assert_eq!(links.len(), 2);
+    }
+
+    #[test]
+    fn test_graph_is_dag() {
+        // Create a simple DAG
+        let mut dag = GraphGenome::new();
+        dag.add_segment(Segment::new("s1", "ACGT"));
+        dag.add_segment(Segment::new("s2", "TGCA"));
+        dag.add_link(Link::new("s1", Orientation::Forward, "s2", Orientation::Forward, "0M"));
+
+        assert!(dag.is_dag());
+    }
+
+    #[test]
+    fn test_graph_with_paths() {
+        let mut graph = GraphGenome::new();
+        graph.add_segment(Segment::new("s1", "ACGT"));
+        graph.add_segment(Segment::new("s2", "TGCA"));
+
+        let mut path = Path::with_segments("test_path", vec![
+            PathSegment::new("s1", Orientation::Forward),
+            PathSegment::new("s2", Orientation::Forward),
+        ]);
+        graph.add_path(path);
+
+        assert_eq!(graph.paths.len(), 1);
+        assert_eq!(graph.paths[0].segments.len(), 2);
     }
 }
 

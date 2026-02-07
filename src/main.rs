@@ -1,8 +1,14 @@
-//! Graph Genome Viewer - A professional pangenome visualization tool
+//! Graph Genome Viewer - Pangenome visualization tool
 //!
-//! This application provides intuitive visualization of graph genomes (GFA format)
+//! This application provides visualization of graph genomes (GFA format)
 //! with support for overlaying long-read sequencing alignments and evaluating
 //! alignment quality metrics.
+//!
+//! # ⚠️ AI-Generated Prototype
+//!
+//! This code was generated with AI assistance and is an **experimental prototype**.
+//! **NOT FOR PRODUCTION USE** - Not validated for scientific accuracy.
+//! Use at your own risk for research/educational purposes only.
 
 mod app;
 mod graph;
@@ -18,14 +24,14 @@ use eframe::egui;
 fn main() -> Result<()> {
     // Initialize logging
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
-    log::info!("Starting Graph Genome Viewer");
+    log::info!("Starting Graph Genome Viewer (AI-generated prototype)");
 
     // Configure native window options
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1400.0, 900.0])
             .with_min_inner_size([800.0, 600.0])
-            .with_title("Graph Genome Viewer"),
+            .with_title("Graph Genome Viewer [PROTOTYPE]"),
         ..Default::default()
     };
 
