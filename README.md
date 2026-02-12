@@ -2,7 +2,7 @@
 
 > ⚠️ **AI-GENERATED PROTOTYPE** ⚠️
 > 
-> This code was generated with AI assistance (GitHub Copilot/Claude) as an **experimental prototype**.
+> This repository was assembled through iterative prompting of AI models (GitHub Copilot/Claude) to sketch a prototype code base for exploration.
 > 
 > **NOT FOR PRODUCTION USE** - This is a proof-of-concept for exploring pangenome visualization approaches.
 > 
@@ -14,6 +14,13 @@
 ---
 
 A pangenome visualization tool built in Rust with egui for GPU-accelerated rendering.
+
+## AI-generated caveats and review focus
+
+- **Parser fragility**: GFA and GAF parsing defaults missing numbers to `0` and occasionally unwraps orientations (e.g., `parse_ref` in `src/io/gfa.rs`, `parse_line` in `src/io/gaf.rs`), so malformed input can panic or silently mask bad data.
+- **Walk metadata defaults**: GFA walk haplotype/start/end fields fall back to zero on parse failure (`parse_walk` in `src/io/gfa.rs`), which can hide upstream data issues.
+- **Stats robustness**: Alignment identity stats sort with `partial_cmp(...).unwrap()` and take a single midpoint for the median (`src/analysis/stats.rs`), so `NaN`s will panic and even-length medians are approximate.
+- **Layout expectations**: The Hierarchical layout option is unimplemented and currently reuses the Tube Map output (`src/app.rs`), while the force-directed layout uses random initialization without stabilization for large graphs (`src/layout/force.rs`), so layouts may be nondeterministic or overlap.
 
 ## Features
 
@@ -241,4 +248,3 @@ The project uses GitHub Actions for CI/CD:
 - **Test Suite**: Runs on every push/PR (Linux + macOS, stable + beta Rust)
 - **Release Builds**: Creates binaries for Linux and macOS (x86_64 + ARM64)
 - **Data Processing**: Validates Python scripts and sample data generation
-
